@@ -30,6 +30,16 @@ export const HeroSection: React.FC = () => {
 
         {/* Golden Mist Reflection Layer at Bottom Right */}
         <div className="absolute bottom-0 right-0 w-1/2 h-48 bg-gradient-to-t from-[#111111]/90 via-[rgba(212,175,55,0.06)] to-transparent z-10 pointer-events-none" />
+
+        {/* Floating Ambient Gold Particles for Cinematic Atmosphere */}
+        <div className="absolute inset-0 z-15 pointer-events-none overflow-hidden">
+          <div className="gold-particle w-1.5 h-1.5 top-[20%] left-[15%]" style={{ animationDelay: '0s', animationDuration: '6s' }} />
+          <div className="gold-particle w-2 h-2 top-[45%] left-[30%]" style={{ animationDelay: '1.5s', animationDuration: '8s' }} />
+          <div className="gold-particle w-1 h-1 top-[65%] left-[20%]" style={{ animationDelay: '3s', animationDuration: '7s' }} />
+          <div className="gold-particle w-2.5 h-2.5 top-[30%] right-[25%]" style={{ animationDelay: '0.8s', animationDuration: '9s' }} />
+          <div className="gold-particle w-1.5 h-1.5 top-[70%] right-[35%]" style={{ animationDelay: '2.2s', animationDuration: '6.5s' }} />
+          <div className="gold-particle w-2 h-2 top-[15%] right-[15%]" style={{ animationDelay: '4s', animationDuration: '7.5s' }} />
+        </div>
       </div>
 
       {/* Main Hero Content - Left Aligned */}
