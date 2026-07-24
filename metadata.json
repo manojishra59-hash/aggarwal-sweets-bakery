@@ -1,0 +1,6 @@
+{
+  "name": "Aggarwal Sweets & Bakery",
+  "description": "Authentic Indian sweet shop and luxury bakery featuring traditional desi ghee sweets, premium gift boxes, festival collections, and fresh bakery items.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
