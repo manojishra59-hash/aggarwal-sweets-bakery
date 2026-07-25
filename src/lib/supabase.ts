@@ -1,7 +1,20 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const rawUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+const rawKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+
+function formatSupabaseUrl(url: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  if (url.includes('.supabase.co')) {
+    return `https://${url}`;
+  }
+  return `https://${url}.supabase.co`;
+}
+
+export const supabaseUrl = formatSupabaseUrl(rawUrl);
 
 function isValidHttpUrl(stringUrl: string): boolean {
   if (!stringUrl) return false;
@@ -14,17 +27,17 @@ function isValidHttpUrl(stringUrl: string): boolean {
 }
 
 export const isSupabaseConfigured = Boolean(
-  rawUrl &&
+  supabaseUrl &&
   rawKey &&
-  isValidHttpUrl(rawUrl) &&
-  !rawUrl.includes('your-supabase-project') &&
+  isValidHttpUrl(supabaseUrl) &&
+  !supabaseUrl.includes('your-supabase-project') &&
   !rawKey.includes('your-supabase-anon-key')
 );
 
 const initSupabase = (): SupabaseClient => {
   if (isSupabaseConfigured) {
     try {
-      return createClient(rawUrl, rawKey);
+      return createClient(supabaseUrl, rawKey);
     } catch (e) {
       console.warn('Invalid Supabase configuration provided in environment variables:', e);
     }

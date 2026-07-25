@@ -23,7 +23,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
   return (
-    <footer className="bg-[#0A0A0A] text-white pt-16 pb-12 border-t border-[#D4AF37]/20 relative overflow-hidden">
+    <footer className="bg-[#0A0A0A] text-white pt-16 pb-28 md:pb-12 border-t border-[#D4AF37]/20 relative overflow-hidden">
       {/* Background Video Layer - Footer Section (120 FPS Optimized) */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none gpu-video-container z-0">
         <video

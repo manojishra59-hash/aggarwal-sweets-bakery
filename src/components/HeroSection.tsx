@@ -42,17 +42,17 @@ export const HeroSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Hero Content - Left Aligned */}
-      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 w-full flex flex-col items-start text-left">
+      {/* Main Hero Content - Responsive Layout */}
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 md:py-24 w-full flex flex-col items-center sm:items-start text-center sm:text-left">
         {/* Royal Badge */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4 }}
-          className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-[#121212]/90 border border-[#D4AF37]/40 shadow-lg mb-6"
+          className="inline-flex items-center space-x-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#121212]/90 border border-[#D4AF37]/40 shadow-lg mb-5 sm:mb-6 max-w-full"
         >
-          <Sparkles className="w-4 h-4 text-[#F4D03F]" />
-          <span className="text-xs font-bold text-[#F4D03F] uppercase tracking-[0.2em] font-sans">
+          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#F4D03F] shrink-0" />
+          <span className="text-[10px] sm:text-xs font-bold text-[#F4D03F] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-sans truncate">
             Est. 1984 • Royal Heritage Halwai
           </span>
         </motion.div>
@@ -62,9 +62,9 @@ export const HeroSection: React.FC = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
-          className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white font-serif-luxury tracking-tight leading-[1.15] max-w-3xl"
+          className="text-[28px] min-[375px]:text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold text-white font-serif-luxury tracking-tight leading-[1.12] sm:leading-[1.15] max-w-4xl"
         >
-          Crafted for Royalty, <br />
+          Crafted for Royalty, <br className="hidden sm:inline" />
           <span className="text-gold-gradient drop-shadow-md">
             Celebrated with Sweetness
           </span>
@@ -75,7 +75,7 @@ export const HeroSection: React.FC = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-6 text-base sm:text-lg md:text-xl text-[#D9D9D9]/90 font-sans max-w-2xl leading-relaxed font-normal"
+          className="mt-4 sm:mt-6 text-sm sm:text-lg md:text-xl text-[#D9D9D9]/90 font-sans max-w-2xl leading-relaxed font-normal"
         >
           Handcrafted in 100% pure organic A2 Desi Ghee, Kashmiri Saffron, and Iranian Pistachios. Experience Delhi's premier sweet legacy delivered fresh to your doorstep.
         </motion.p>
@@ -85,11 +85,11 @@ export const HeroSection: React.FC = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-4 w-full sm:w-auto"
+          className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3.5 sm:gap-4 w-full sm:w-auto"
         >
           <a
             href="#featured-sweets"
-            className="px-8 py-4 rounded-xl btn-gold text-xs font-extrabold tracking-[0.15em] uppercase shadow-[0_10px_30px_rgba(212,175,55,0.3)] flex items-center justify-center space-x-3 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl btn-gold text-xs font-extrabold tracking-[0.15em] uppercase shadow-[0_10px_30px_rgba(212,175,55,0.3)] flex items-center justify-center space-x-3 transition-transform hover:scale-105 active:scale-95 cursor-pointer min-h-[48px]"
           >
             <span>Explore Royal Sweets</span>
             <ArrowRight className="w-4 h-4 text-[#0A0A0A]" />
@@ -97,7 +97,7 @@ export const HeroSection: React.FC = () => {
 
           <a
             href="#gift-boxes"
-            className="px-8 py-4 rounded-xl bg-[#141414]/90 border border-[#D4AF37]/50 hover:border-[#D4AF37] text-white hover:text-[#F4D03F] text-xs font-bold tracking-[0.15em] uppercase shadow-xl flex items-center justify-center space-x-2.5 transition-all cursor-pointer"
+            className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-[#141414]/90 border border-[#D4AF37]/50 hover:border-[#D4AF37] text-white hover:text-[#F4D03F] text-xs font-bold tracking-[0.15em] uppercase shadow-xl flex items-center justify-center space-x-2.5 transition-all cursor-pointer min-h-[48px]"
           >
             <Gift className="w-4 h-4 text-[#F4D03F]" />
             <span>Luxury Gift Trunks</span>
@@ -109,27 +109,27 @@ export const HeroSection: React.FC = () => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-12 pt-8 border-t border-[#D4AF37]/20 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-3xl w-full text-left"
+          className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-[#D4AF37]/20 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-3xl w-full text-center sm:text-left justify-items-center sm:justify-items-start"
         >
-          <div className="flex flex-col items-start space-y-1">
+          <div className="flex flex-col items-center sm:items-start space-y-1">
             <Award className="w-5 h-5 text-[#F4D03F]" />
             <span className="text-xs font-bold text-white font-serif-luxury">100% Desi Ghee</span>
             <span className="text-[10px] text-[#A3A3A3]">Pure A2 Cow Ghee</span>
           </div>
 
-          <div className="flex flex-col items-start space-y-1">
+          <div className="flex flex-col items-center sm:items-start space-y-1">
             <Sparkles className="w-5 h-5 text-[#F4D03F]" />
             <span className="text-xs font-bold text-white font-serif-luxury">Daily Fresh Batches</span>
             <span className="text-[10px] text-[#A3A3A3]">Melt-in-mouth texture</span>
           </div>
 
-          <div className="flex flex-col items-start space-y-1">
+          <div className="flex flex-col items-center sm:items-start space-y-1">
             <Gift className="w-5 h-5 text-[#F4D03F]" />
             <span className="text-xs font-bold text-white font-serif-luxury">24K Gold Trunks</span>
             <span className="text-[10px] text-[#A3A3A3]">Bespoke Velvet Packaging</span>
           </div>
 
-          <div className="flex flex-col items-start space-y-1">
+          <div className="flex flex-col items-center sm:items-start space-y-1">
             <ShieldCheck className="w-5 h-5 text-[#F4D03F]" />
             <span className="text-xs font-bold text-white font-serif-luxury">Express Delivery</span>
             <span className="text-[10px] text-[#A3A3A3]">Pan Delhi-NCR & India</span>

@@ -20,6 +20,10 @@ import {
   ShieldCheck,
   CheckCircle2,
   RefreshCw,
+  PartyPopper,
+  UserCheck,
+  Building2,
+  Lock,
 } from 'lucide-react';
 import {
   apiService,
@@ -49,6 +53,10 @@ import { OffersTab } from './tabs/OffersTab';
 import { BlogsTab } from './tabs/BlogsTab';
 import { SettingsTab } from './tabs/SettingsTab';
 import { ReportsTab } from './tabs/ReportsTab';
+import { FestivalsTab } from './tabs/FestivalsTab';
+import { StaffTab } from './tabs/StaffTab';
+import { BranchesTab } from './tabs/BranchesTab';
+import { SecurityBackupTab } from './tabs/SecurityBackupTab';
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -127,18 +135,22 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
 
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'orders', label: 'Orders', icon: ShoppingBag, badge: orders.filter((o) => o.status === 'Preparing' || o.status === 'Pending').length },
-    { id: 'products', label: 'Products', icon: Package },
+    { id: 'orders', label: 'Orders & POS', icon: ShoppingBag, badge: orders.filter((o) => o.status === 'Preparing' || o.status === 'Pending').length },
+    { id: 'products', label: 'Products & Mithai', icon: Package },
     { id: 'categories', label: 'Categories', icon: Layers },
-    { id: 'inventory', label: 'Inventory', icon: Boxes, badge: products.filter((p) => p.stockKg <= 10).length, badgeColor: 'bg-rose-500' },
-    { id: 'bookings', label: 'Bookings', icon: Calendar, badge: bookings.filter((b) => b.status === 'Pending').length },
-    { id: 'customers', label: 'Customers', icon: Users },
+    { id: 'festivals', label: 'Festivals & Banners', icon: PartyPopper },
+    { id: 'inventory', label: 'Inventory & Materials', icon: Boxes, badge: products.filter((p) => p.stockKg <= 10).length, badgeColor: 'bg-rose-500' },
+    { id: 'bookings', label: 'Table Bookings', icon: Calendar, badge: bookings.filter((b) => b.status === 'Pending').length },
+    { id: 'customers', label: 'CRM & Loyalty', icon: Users },
+    { id: 'staff', label: 'Staff & Payroll', icon: UserCheck },
+    { id: 'branches', label: 'Store Outlets', icon: Building2 },
     { id: 'reviews', label: 'Reviews', icon: Star },
     { id: 'contacts', label: 'Inquiries', icon: MessageSquare },
     { id: 'coupons', label: 'Coupons', icon: Tag },
     { id: 'offers', label: 'Offers & Popups', icon: Sparkles },
     { id: 'blogs', label: 'Stories / Blog', icon: BookOpen },
     { id: 'reports', label: 'Sales Reports', icon: BarChart3 },
+    { id: 'security', label: 'Security & Backup', icon: Lock },
     { id: 'settings', label: 'Store Settings', icon: Settings },
   ];
 
@@ -154,10 +166,10 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
             <h1 className="text-base font-extrabold font-serif-luxury text-white tracking-wide flex items-center space-x-2">
               <span>{settings.businessName}</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-[#F4D03F] border border-[#D4AF37]/40 uppercase font-mono font-bold">
-                Admin Console
+                ERP Admin Console
               </span>
             </h1>
-            <p className="text-[11px] text-gray-400">Store Executive Operations & Inventory Control</p>
+            <p className="text-[11px] text-gray-400">Store Operations, Inventory, Festivals & Multi-Branch ERP</p>
           </div>
         </div>
 
@@ -301,6 +313,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
             <CategoriesTab categories={categories} onRefresh={loadData} />
           )}
 
+          {activeTab === 'festivals' && <FestivalsTab />}
+
           {activeTab === 'inventory' && (
             <InventoryTab products={products} onRefresh={loadData} />
           )}
@@ -310,6 +324,10 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
           )}
 
           {activeTab === 'customers' && <CustomersTab customers={customers} />}
+
+          {activeTab === 'staff' && <StaffTab />}
+
+          {activeTab === 'branches' && <BranchesTab />}
 
           {activeTab === 'reviews' && <ReviewsTab />}
 
@@ -322,6 +340,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
           {activeTab === 'blogs' && <BlogsTab blogs={blogs} />}
 
           {activeTab === 'reports' && <ReportsTab orders={orders} products={products} />}
+
+          {activeTab === 'security' && <SecurityBackupTab />}
 
           {activeTab === 'settings' && <SettingsTab settings={settings} onRefresh={loadData} />}
         </main>

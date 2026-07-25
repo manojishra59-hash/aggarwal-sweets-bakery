@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 import { SweetItem, ReviewItem, CartItem } from '../types';
 import { FEATURED_SWEETS, GOOGLE_REVIEWS, BRAND_NAME, BRAND_PHONE, BRAND_WHATSAPP, BRAND_ADDRESS, BRAND_HOURS } from '../data/sweetsData';
+export { BRAND_WHATSAPP, BRAND_NAME, BRAND_PHONE };
 
 export interface AdminProduct extends SweetItem {
   stockKg: number;
@@ -67,6 +68,126 @@ export interface CustomerRecord {
   isBlocked: boolean;
   totalOrders: number;
   totalSpent: number;
+  birthday?: string;
+  anniversary?: string;
+  loyaltyPoints?: number;
+  segment?: 'VIP Royal' | 'Regular' | 'New' | 'Festival Corporate';
+}
+
+export interface FestivalCampaignRecord {
+  id: string;
+  name: string;
+  festivalType: 'Diwali' | 'Holi' | 'Raksha Bandhan' | 'Wedding Season' | 'Durga Puja' | 'New Year' | 'Other';
+  bannerImage: string;
+  specialProducts: string[];
+  discountPercent: number;
+  startDate: string;
+  expiryDate: string;
+  status: 'Active' | 'Upcoming' | 'Expired';
+  description: string;
+}
+
+export interface RawMaterialRecord {
+  id: string;
+  name: string;
+  category: 'Ghee' | 'Milk' | 'Sugar' | 'Dry Fruits' | 'Packaging Material' | 'Spices & Flavors' | 'Flour & Grains';
+  currentStock: number;
+  unit: 'kg' | 'liters' | 'boxes' | 'grams';
+  minThreshold: number;
+  costPerUnit: number;
+  supplierName: string;
+  lastRestocked: string;
+}
+
+export interface SupplierRecord {
+  id: string;
+  name: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  itemsSupplied: string[];
+  totalPurchaseAmount: number;
+}
+
+export interface PurchaseRecord {
+  id: string;
+  createdAt: string;
+  materialName: string;
+  supplierName: string;
+  quantity: number;
+  unit: string;
+  totalCost: number;
+  invoiceRef: string;
+}
+
+export interface StaffRecord {
+  id: string;
+  name: string;
+  role: 'Owner' | 'Manager' | 'Staff' | 'Head Halwai';
+  phone: string;
+  email: string;
+  branch: string;
+  monthlySalary: number;
+  joinDate: string;
+  status: 'Active' | 'On Leave' | 'Inactive';
+  permissions: {
+    manageProducts: boolean;
+    manageOrders: boolean;
+    manageInventory: boolean;
+    manageStaff: boolean;
+    manageReports: boolean;
+  };
+}
+
+export interface AttendanceRecord {
+  id: string;
+  staffId: string;
+  staffName: string;
+  date: string;
+  status: 'Present' | 'Absent' | 'Half Day' | 'Leave';
+  shiftTiming: string;
+}
+
+export interface SalaryRecord {
+  id: string;
+  staffId: string;
+  staffName: string;
+  month: string;
+  baseSalary: number;
+  bonus: number;
+  deductions: number;
+  netPayable: number;
+  paymentStatus: 'Paid' | 'Pending';
+  paidDate?: string;
+}
+
+export interface LoyaltyRecord {
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  totalPointsEarned: number;
+  currentPointsBalance: number;
+  pointsRedeemed: number;
+  tier: 'Gold' | 'Platinum' | 'Royal VIP';
+}
+
+export interface BranchRecord {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  managerName: string;
+  isActive: boolean;
+  todaySales: number;
+}
+
+export interface ActivityLogRecord {
+  id: string;
+  timestamp: string;
+  userRole: string;
+  userName: string;
+  action: string;
+  details: string;
 }
 
 export interface ContactRecord {
@@ -225,6 +346,10 @@ const INITIAL_CUSTOMERS: CustomerRecord[] = [
     isBlocked: false,
     totalOrders: 4,
     totalSpent: 6400,
+    birthday: '1988-10-15',
+    anniversary: '2014-11-20',
+    loyaltyPoints: 640,
+    segment: 'VIP Royal',
   },
   {
     id: 'cust-2',
@@ -236,6 +361,319 @@ const INITIAL_CUSTOMERS: CustomerRecord[] = [
     isBlocked: false,
     totalOrders: 2,
     totalSpent: 3800,
+    birthday: '1992-05-18',
+    loyaltyPoints: 380,
+    segment: 'Regular',
+  },
+  {
+    id: 'cust-3',
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+    name: 'Vikramaditya Gupta',
+    phone: '+91 98990 11223',
+    email: 'vikram.g@gmail.com',
+    address: 'Connaught Place, New Delhi',
+    isBlocked: false,
+    totalOrders: 8,
+    totalSpent: 18500,
+    birthday: '1982-12-04',
+    anniversary: '2010-02-14',
+    loyaltyPoints: 1850,
+    segment: 'Festival Corporate',
+  },
+];
+
+const INITIAL_FESTIVALS: FestivalCampaignRecord[] = [
+  {
+    id: 'fest-1',
+    name: 'Grand Diwali Royal Mahotsav 2026',
+    festivalType: 'Diwali',
+    bannerImage: 'https://res.cloudinary.com/q8pk1ufj/image/upload/v1784720744/diwali_box.jpg',
+    specialProducts: ['kaju-katli', 'motichoor-laddu', 'dry-fruit-sweets'],
+    discountPercent: 15,
+    startDate: '2026-10-01',
+    expiryDate: '2026-11-15',
+    status: 'Active',
+    description: 'Bespoke 24K Gold velvet trunks & organic Desi Ghee mithai hampers for Diwali gifting.',
+  },
+  {
+    id: 'fest-2',
+    name: 'Rakhi Sweets & Silver Platter Collection',
+    festivalType: 'Raksha Bandhan',
+    bannerImage: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=800&auto=format&fit=crop&q=80',
+    specialProducts: ['kaju-katli', 'besan-laddu'],
+    discountPercent: 10,
+    startDate: '2026-08-01',
+    expiryDate: '2026-08-25',
+    status: 'Upcoming',
+    description: 'Custom silver thali packaging with handcrafted designer Rakhis and pure Desi Ghee laddus.',
+  },
+  {
+    id: 'fest-3',
+    name: 'Royal Wedding Sweets Trunk Campaign',
+    festivalType: 'Wedding Season',
+    bannerImage: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=800&auto=format&fit=crop&q=80',
+    specialProducts: ['dry-fruit-sweets', 'kaju-katli'],
+    discountPercent: 20,
+    startDate: '2026-11-01',
+    expiryDate: '2027-02-28',
+    status: 'Upcoming',
+    description: 'Customized wedding invitation mithai boxes with embossed gold leaf logo.',
+  },
+];
+
+const INITIAL_RAW_MATERIALS: RawMaterialRecord[] = [
+  {
+    id: 'raw-1',
+    name: 'Pure A2 Organic Cow Ghee',
+    category: 'Ghee',
+    currentStock: 180,
+    unit: 'kg',
+    minThreshold: 50,
+    costPerUnit: 780,
+    supplierName: 'Organic Bilona Farms Co.',
+    lastRestocked: '2026-07-20',
+  },
+  {
+    id: 'raw-2',
+    name: 'Fresh Full Cream Milk',
+    category: 'Milk',
+    currentStock: 450,
+    unit: 'liters',
+    minThreshold: 100,
+    costPerUnit: 65,
+    supplierName: 'Mother Dairy Bulk Supply',
+    lastRestocked: '2026-07-24',
+  },
+  {
+    id: 'raw-3',
+    name: 'Refined Sulphur-Free Sugar',
+    category: 'Sugar',
+    currentStock: 600,
+    unit: 'kg',
+    minThreshold: 150,
+    costPerUnit: 44,
+    supplierName: 'Uttam Sugar Mills',
+    lastRestocked: '2026-07-18',
+  },
+  {
+    id: 'raw-4',
+    name: 'Kashmiri Mogra Saffron (Kesar)',
+    category: 'Spices & Flavors',
+    currentStock: 1200,
+    unit: 'grams',
+    minThreshold: 300,
+    costPerUnit: 220,
+    supplierName: 'Pampore Kashmiri Saffron Exporters',
+    lastRestocked: '2026-07-10',
+  },
+  {
+    id: 'raw-5',
+    name: 'Premium W240 Cashew Nuts (Kaju)',
+    category: 'Dry Fruits',
+    currentStock: 85,
+    unit: 'kg',
+    minThreshold: 30,
+    costPerUnit: 820,
+    supplierName: 'Mangalore Cashew Importers',
+    lastRestocked: '2026-07-21',
+  },
+  {
+    id: 'raw-6',
+    name: 'Royal Gold Embossed Boxes (1kg)',
+    category: 'Packaging Material',
+    currentStock: 420,
+    unit: 'boxes',
+    minThreshold: 100,
+    costPerUnit: 65,
+    supplierName: 'Luxuria Packaging Printers',
+    lastRestocked: '2026-07-15',
+  },
+];
+
+const INITIAL_SUPPLIERS: SupplierRecord[] = [
+  {
+    id: 'sup-1',
+    name: 'Organic Bilona Farms Co.',
+    contactPerson: 'Suresh Kumar',
+    phone: '+91 98112 33445',
+    email: 'suresh@bilonaghee.com',
+    itemsSupplied: ['Pure A2 Organic Cow Ghee', 'Fresh Mawa Khoya'],
+    totalPurchaseAmount: 450000,
+  },
+  {
+    id: 'sup-2',
+    name: 'Pampore Kashmiri Saffron Exporters',
+    contactPerson: 'Tariq Ahmed',
+    phone: '+91 94190 88776',
+    email: 'tariq@kashmirsaffron.in',
+    itemsSupplied: ['Kashmiri Mogra Saffron (Kesar)'],
+    totalPurchaseAmount: 320000,
+  },
+  {
+    id: 'sup-3',
+    name: 'Luxuria Packaging Printers',
+    contactPerson: 'Harpreet Singh',
+    phone: '+91 98730 44556',
+    email: 'harpreet@luxuriapackaging.com',
+    itemsSupplied: ['Royal Gold Embossed Boxes', 'Velvet Trunks'],
+    totalPurchaseAmount: 180000,
+  },
+];
+
+const INITIAL_PURCHASES: PurchaseRecord[] = [
+  {
+    id: 'pur-101',
+    createdAt: '2026-07-21',
+    materialName: 'Premium W240 Cashew Nuts (Kaju)',
+    supplierName: 'Mangalore Cashew Importers',
+    quantity: 50,
+    unit: 'kg',
+    totalCost: 41000,
+    invoiceRef: 'INV-MCI-8821',
+  },
+  {
+    id: 'pur-102',
+    createdAt: '2026-07-20',
+    materialName: 'Pure A2 Organic Cow Ghee',
+    supplierName: 'Organic Bilona Farms Co.',
+    quantity: 100,
+    unit: 'kg',
+    totalCost: 78000,
+    invoiceRef: 'INV-OBF-4412',
+  },
+];
+
+const INITIAL_STAFF: StaffRecord[] = [
+  {
+    id: 'stf-1',
+    name: 'Manoj Aggarwal',
+    role: 'Owner',
+    phone: '+91 98100 12345',
+    email: 'owner@aggarwalsweets.com',
+    branch: 'Rajouri Garden (Main Flagship)',
+    monthlySalary: 150000,
+    joinDate: '2004-01-01',
+    status: 'Active',
+    permissions: { manageProducts: true, manageOrders: true, manageInventory: true, manageStaff: true, manageReports: true },
+  },
+  {
+    id: 'stf-2',
+    name: 'Ramesh Halwai Master',
+    role: 'Head Halwai',
+    phone: '+91 98111 44556',
+    email: 'ramesh.halwai@aggarwalsweets.com',
+    branch: 'Rajouri Garden (Main Flagship)',
+    monthlySalary: 65000,
+    joinDate: '2010-03-15',
+    status: 'Active',
+    permissions: { manageProducts: true, manageOrders: true, manageInventory: true, manageStaff: false, manageReports: false },
+  },
+  {
+    id: 'stf-3',
+    name: 'Priya Sharma',
+    role: 'Manager',
+    phone: '+91 98711 66778',
+    email: 'priya@aggarwalsweets.com',
+    branch: 'Rajouri Garden (Main Flagship)',
+    monthlySalary: 45000,
+    joinDate: '2021-06-01',
+    status: 'Active',
+    permissions: { manageProducts: true, manageOrders: true, manageInventory: true, manageStaff: true, manageReports: true },
+  },
+  {
+    id: 'stf-4',
+    name: 'Amit Verma',
+    role: 'Staff',
+    phone: '+91 98991 22334',
+    email: 'amit@aggarwalsweets.com',
+    branch: 'Janakpuri Outlet',
+    monthlySalary: 28000,
+    joinDate: '2023-02-10',
+    status: 'Active',
+    permissions: { manageProducts: false, manageOrders: true, manageInventory: false, manageStaff: false, manageReports: false },
+  },
+];
+
+const INITIAL_ATTENDANCE: AttendanceRecord[] = [
+  { id: 'att-1', staffId: 'stf-1', staffName: 'Manoj Aggarwal', date: '2026-07-25', status: 'Present', shiftTiming: '08:00 - 20:00' },
+  { id: 'att-2', staffId: 'stf-2', staffName: 'Ramesh Halwai Master', date: '2026-07-25', status: 'Present', shiftTiming: '06:00 - 18:00' },
+  { id: 'att-3', staffId: 'stf-3', staffName: 'Priya Sharma', date: '2026-07-25', status: 'Present', shiftTiming: '09:00 - 19:00' },
+  { id: 'att-4', staffId: 'stf-4', staffName: 'Amit Verma', date: '2026-07-25', status: 'Present', shiftTiming: '10:00 - 20:00' },
+];
+
+const INITIAL_SALARIES: SalaryRecord[] = [
+  {
+    id: 'sal-1',
+    staffId: 'stf-2',
+    staffName: 'Ramesh Halwai Master',
+    month: 'July 2026',
+    baseSalary: 65000,
+    bonus: 5000,
+    deductions: 0,
+    netPayable: 70000,
+    paymentStatus: 'Paid',
+    paidDate: '2026-07-01',
+  },
+  {
+    id: 'sal-2',
+    staffId: 'stf-3',
+    staffName: 'Priya Sharma',
+    month: 'July 2026',
+    baseSalary: 45000,
+    bonus: 2500,
+    deductions: 0,
+    netPayable: 47500,
+    paymentStatus: 'Paid',
+    paidDate: '2026-07-01',
+  },
+];
+
+const INITIAL_BRANCHES: BranchRecord[] = [
+  {
+    id: 'br-1',
+    name: 'Rajouri Garden (Main Flagship)',
+    address: 'Plot 42, Main Market, Rajouri Garden, New Delhi',
+    phone: '+91 98100 12345',
+    managerName: 'Priya Sharma',
+    isActive: true,
+    todaySales: 142500,
+  },
+  {
+    id: 'br-2',
+    name: 'Janakpuri Outlet',
+    address: 'A-42, Central Market, Janakpuri, New Delhi',
+    phone: '+91 98711 22334',
+    managerName: 'Amit Verma',
+    isActive: true,
+    todaySales: 89400,
+  },
+  {
+    id: 'br-3',
+    name: 'Connaught Place Boutique',
+    address: 'Block E, Inner Circle, Connaught Place, New Delhi',
+    phone: '+91 98990 11223',
+    managerName: 'Vikram Singh',
+    isActive: true,
+    todaySales: 215000,
+  },
+];
+
+const INITIAL_LOGS: ActivityLogRecord[] = [
+  {
+    id: 'log-1',
+    timestamp: new Date().toISOString(),
+    userRole: 'Owner',
+    userName: 'Manoj Aggarwal',
+    action: 'System Backup Created',
+    details: 'Full JSON data snapshot generated.',
+  },
+  {
+    id: 'log-2',
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    userRole: 'Manager',
+    userName: 'Priya Sharma',
+    action: 'Stock Restocked',
+    details: 'Added 50kg Motichoor Laddu stock.',
   },
 ];
 
@@ -303,6 +741,33 @@ const INITIAL_SETTINGS: SettingsRecord = {
   gstNumber: '07AAAAA0000A1Z5',
   logoUrl: '',
 };
+
+const INITIAL_NOTIFICATIONS: NotificationRecord[] = [
+  {
+    id: 'notif-1',
+    createdAt: new Date().toISOString(),
+    type: 'order',
+    title: 'New Online Mithai Order #ORD-8821',
+    message: 'Received 5kg Kaju Katli & Royal Gift Box order (₹4,900) for delivery.',
+    isRead: false,
+  },
+  {
+    id: 'notif-2',
+    createdAt: new Date(Date.now() - 1800000).toISOString(),
+    type: 'booking',
+    title: 'Diwali Banquet Hall Reservation',
+    message: 'Corporate VIP booking request for 80 guests on Oct 28.',
+    isRead: false,
+  },
+  {
+    id: 'notif-3',
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+    type: 'stock',
+    title: 'Low Raw Material Stock: A2 Pure Desi Ghee',
+    message: 'Stock level dropped below minimum threshold (18 kg remaining).',
+    isRead: true,
+  },
+];
 
 // Local storage helper functions
 function getLocal<T>(key: string, initial: T): T {
@@ -787,37 +1252,347 @@ export const apiService = {
     return updated;
   },
 
-  // NOTIFICATIONS
-  async getNotifications(): Promise<NotificationRecord[]> {
-    return getLocal<NotificationRecord[]>('notifications', [
-      {
-        id: 'n-1',
-        createdAt: new Date().toISOString(),
-        type: 'order',
-        title: 'System Initialized',
-        message: 'Aggarwal Sweets Admin Console connected & active.',
-        isRead: false,
-      },
-    ]);
+  // FESTIVALS
+  async getFestivals(): Promise<FestivalCampaignRecord[]> {
+    return getLocal<FestivalCampaignRecord[]>('festivals', INITIAL_FESTIVALS);
   },
 
-  async addNotification(n: { type: NotificationRecord['type']; title: string; message: string }): Promise<void> {
-    const notifications = await this.getNotifications();
-    notifications.unshift({
-      id: `n-${Date.now()}`,
+  async saveFestival(f: Partial<FestivalCampaignRecord>): Promise<FestivalCampaignRecord> {
+    const list = getLocal<FestivalCampaignRecord[]>('festivals', INITIAL_FESTIVALS);
+    let updated: FestivalCampaignRecord;
+    if (f.id) {
+      const idx = list.findIndex((item) => item.id === f.id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...f } as FestivalCampaignRecord;
+        updated = list[idx];
+      } else {
+        updated = { ...f } as FestivalCampaignRecord;
+        list.push(updated);
+      }
+    } else {
+      updated = {
+        id: `fest-${Date.now()}`,
+        name: f.name || 'New Festival Campaign',
+        festivalType: f.festivalType || 'Diwali',
+        bannerImage: f.bannerImage || 'https://res.cloudinary.com/q8pk1ufj/image/upload/v1784720744/diwali_box.jpg',
+        specialProducts: f.specialProducts || [],
+        discountPercent: f.discountPercent || 10,
+        startDate: f.startDate || new Date().toISOString().split('T')[0],
+        expiryDate: f.expiryDate || '2026-11-30',
+        status: 'Active',
+        description: f.description || '',
+      };
+      list.push(updated);
+    }
+    setLocal('festivals', list);
+    return updated;
+  },
+
+  async deleteFestival(id: string): Promise<void> {
+    const list = getLocal<FestivalCampaignRecord[]>('festivals', INITIAL_FESTIVALS).filter((item) => item.id !== id);
+    setLocal('festivals', list);
+  },
+
+  // RAW MATERIALS & SUPPLIERS
+  async getRawMaterials(): Promise<RawMaterialRecord[]> {
+    return getLocal<RawMaterialRecord[]>('raw_materials', INITIAL_RAW_MATERIALS);
+  },
+
+  async saveRawMaterial(mat: Partial<RawMaterialRecord>): Promise<RawMaterialRecord> {
+    const list = getLocal<RawMaterialRecord[]>('raw_materials', INITIAL_RAW_MATERIALS);
+    let updated: RawMaterialRecord;
+    if (mat.id) {
+      const idx = list.findIndex((m) => m.id === mat.id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...mat } as RawMaterialRecord;
+        updated = list[idx];
+      } else {
+        updated = { ...mat } as RawMaterialRecord;
+        list.push(updated);
+      }
+    } else {
+      updated = {
+        id: `raw-${Date.now()}`,
+        name: mat.name || 'New Ingredient',
+        category: mat.category || 'Ghee',
+        currentStock: mat.currentStock || 50,
+        unit: mat.unit || 'kg',
+        minThreshold: mat.minThreshold || 10,
+        costPerUnit: mat.costPerUnit || 100,
+        supplierName: mat.supplierName || 'General Supplier',
+        lastRestocked: new Date().toISOString().split('T')[0],
+      };
+      list.push(updated);
+    }
+    setLocal('raw_materials', list);
+    return updated;
+  },
+
+  async getSuppliers(): Promise<SupplierRecord[]> {
+    return getLocal<SupplierRecord[]>('suppliers', INITIAL_SUPPLIERS);
+  },
+
+  async saveSupplier(sup: Partial<SupplierRecord>): Promise<SupplierRecord> {
+    const list = getLocal<SupplierRecord[]>('suppliers', INITIAL_SUPPLIERS);
+    let updated: SupplierRecord;
+    if (sup.id) {
+      const idx = list.findIndex((s) => s.id === sup.id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...sup } as SupplierRecord;
+        updated = list[idx];
+      } else {
+        updated = { ...sup } as SupplierRecord;
+        list.push(updated);
+      }
+    } else {
+      updated = {
+        id: `sup-${Date.now()}`,
+        name: sup.name || 'New Supplier',
+        contactPerson: sup.contactPerson || '',
+        phone: sup.phone || '',
+        email: sup.email || '',
+        itemsSupplied: sup.itemsSupplied || [],
+        totalPurchaseAmount: sup.totalPurchaseAmount || 0,
+      };
+      list.push(updated);
+    }
+    setLocal('suppliers', list);
+    return updated;
+  },
+
+  async getPurchases(): Promise<PurchaseRecord[]> {
+    return getLocal<PurchaseRecord[]>('purchases', INITIAL_PURCHASES);
+  },
+
+  async addPurchase(pur: Partial<PurchaseRecord>): Promise<PurchaseRecord> {
+    const list = getLocal<PurchaseRecord[]>('purchases', INITIAL_PURCHASES);
+    const newPur: PurchaseRecord = {
+      id: `pur-${Date.now()}`,
+      createdAt: new Date().toISOString().split('T')[0],
+      materialName: pur.materialName || 'Raw Material',
+      supplierName: pur.supplierName || 'General Vendor',
+      quantity: pur.quantity || 10,
+      unit: pur.unit || 'kg',
+      totalCost: pur.totalCost || 1000,
+      invoiceRef: pur.invoiceRef || `INV-${Math.floor(1000 + Math.random() * 9000)}`,
+    };
+    list.unshift(newPur);
+    setLocal('purchases', list);
+
+    // Increment raw material stock
+    const mats = await this.getRawMaterials();
+    const targetMat = mats.find((m) => m.name === newPur.materialName);
+    if (targetMat) {
+      targetMat.currentStock += newPur.quantity;
+      targetMat.lastRestocked = newPur.createdAt;
+      setLocal('raw_materials', mats);
+    }
+
+    return newPur;
+  },
+
+  // STAFF MANAGEMENT
+  async getStaff(): Promise<StaffRecord[]> {
+    return getLocal<StaffRecord[]>('staff', INITIAL_STAFF);
+  },
+
+  async saveStaff(s: Partial<StaffRecord>): Promise<StaffRecord> {
+    const list = getLocal<StaffRecord[]>('staff', INITIAL_STAFF);
+    let updated: StaffRecord;
+    if (s.id) {
+      const idx = list.findIndex((item) => item.id === s.id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...s } as StaffRecord;
+        updated = list[idx];
+      } else {
+        updated = { ...s } as StaffRecord;
+        list.push(updated);
+      }
+    } else {
+      updated = {
+        id: `stf-${Date.now()}`,
+        name: s.name || 'New Staff Member',
+        role: s.role || 'Staff',
+        phone: s.phone || '',
+        email: s.email || '',
+        branch: s.branch || 'Rajouri Garden (Main Flagship)',
+        monthlySalary: s.monthlySalary || 25000,
+        joinDate: new Date().toISOString().split('T')[0],
+        status: 'Active',
+        permissions: s.permissions || {
+          manageProducts: false,
+          manageOrders: true,
+          manageInventory: false,
+          manageStaff: false,
+          manageReports: false,
+        },
+      };
+      list.push(updated);
+    }
+    setLocal('staff', list);
+    return updated;
+  },
+
+  async getAttendance(): Promise<AttendanceRecord[]> {
+    return getLocal<AttendanceRecord[]>('attendance', INITIAL_ATTENDANCE);
+  },
+
+  async markAttendance(att: Partial<AttendanceRecord>): Promise<AttendanceRecord> {
+    const list = getLocal<AttendanceRecord[]>('attendance', INITIAL_ATTENDANCE);
+    const existingIdx = list.findIndex((a) => a.staffId === att.staffId && a.date === att.date);
+    let updated: AttendanceRecord;
+    if (existingIdx !== -1) {
+      list[existingIdx] = { ...list[existingIdx], ...att } as AttendanceRecord;
+      updated = list[existingIdx];
+    } else {
+      updated = {
+        id: `att-${Date.now()}`,
+        staffId: att.staffId || 'stf-1',
+        staffName: att.staffName || 'Staff Member',
+        date: att.date || new Date().toISOString().split('T')[0],
+        status: att.status || 'Present',
+        shiftTiming: att.shiftTiming || '09:00 - 19:00',
+      };
+      list.unshift(updated);
+    }
+    setLocal('attendance', list);
+    return updated;
+  },
+
+  async getSalaries(): Promise<SalaryRecord[]> {
+    return getLocal<SalaryRecord[]>('salaries', INITIAL_SALARIES);
+  },
+
+  async paySalary(sal: Partial<SalaryRecord>): Promise<SalaryRecord> {
+    const list = getLocal<SalaryRecord[]>('salaries', INITIAL_SALARIES);
+    const newSal: SalaryRecord = {
+      id: `sal-${Date.now()}`,
+      staffId: sal.staffId || 'stf-1',
+      staffName: sal.staffName || 'Staff Member',
+      month: sal.month || 'July 2026',
+      baseSalary: sal.baseSalary || 30000,
+      bonus: sal.bonus || 0,
+      deductions: sal.deductions || 0,
+      netPayable: (sal.baseSalary || 30000) + (sal.bonus || 0) - (sal.deductions || 0),
+      paymentStatus: 'Paid',
+      paidDate: new Date().toISOString().split('T')[0],
+    };
+    list.unshift(newSal);
+    setLocal('salaries', list);
+    return newSal;
+  },
+
+  // MULTI-BRANCH
+  async getBranches(): Promise<BranchRecord[]> {
+    return getLocal<BranchRecord[]>('branches', INITIAL_BRANCHES);
+  },
+
+  async saveBranch(br: Partial<BranchRecord>): Promise<BranchRecord> {
+    const list = getLocal<BranchRecord[]>('branches', INITIAL_BRANCHES);
+    let updated: BranchRecord;
+    if (br.id) {
+      const idx = list.findIndex((b) => b.id === br.id);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...br } as BranchRecord;
+        updated = list[idx];
+      } else {
+        updated = { ...br } as BranchRecord;
+        list.push(updated);
+      }
+    } else {
+      updated = {
+        id: `br-${Date.now()}`,
+        name: br.name || 'New Store Branch',
+        address: br.address || '',
+        phone: br.phone || '',
+        managerName: br.managerName || 'Unassigned',
+        isActive: true,
+        todaySales: 0,
+      };
+      list.push(updated);
+    }
+    setLocal('branches', list);
+    return updated;
+  },
+
+  // LOGS & BACKUP
+  async getNotifications(): Promise<NotificationRecord[]> {
+    return getLocal<NotificationRecord[]>('notifications', INITIAL_NOTIFICATIONS);
+  },
+
+  async addNotification(notif: Omit<NotificationRecord, 'id' | 'createdAt' | 'isRead'>): Promise<NotificationRecord> {
+    const list = getLocal<NotificationRecord[]>('notifications', INITIAL_NOTIFICATIONS);
+    const newNotif: NotificationRecord = {
+      ...notif,
+      id: `notif-${Date.now()}`,
       createdAt: new Date().toISOString(),
-      type: n.type,
-      title: n.title,
-      message: n.message,
       isRead: false,
-    });
-    setLocal('notifications', notifications.slice(0, 30));
+    };
+    list.unshift(newNotif);
+    setLocal('notifications', list);
+    return newNotif;
   },
 
   async markNotificationRead(id: string): Promise<void> {
-    const notifications = await this.getNotifications();
-    const item = notifications.find((n) => n.id === id);
-    if (item) item.isRead = true;
-    setLocal('notifications', notifications);
+    const list = getLocal<NotificationRecord[]>('notifications', INITIAL_NOTIFICATIONS);
+    const updated = list.map((n) => (n.id === id ? { ...n, isRead: true } : n));
+    setLocal('notifications', updated);
+  },
+
+  async getLogs(): Promise<ActivityLogRecord[]> {
+    return getLocal<ActivityLogRecord[]>('logs', INITIAL_LOGS);
+  },
+
+  async addLog(userRole: string, userName: string, action: string, details: string): Promise<void> {
+    const list = getLocal<ActivityLogRecord[]>('logs', INITIAL_LOGS);
+    list.unshift({
+      id: `log-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      userRole,
+      userName,
+      action,
+      details,
+    });
+    setLocal('logs', list.slice(0, 100));
+  },
+
+  exportBackupJSON(): string {
+    const data = {
+      products: getLocal('products', INITIAL_PRODUCTS),
+      categories: getLocal('categories', INITIAL_CATEGORIES),
+      orders: getLocal('orders', INITIAL_ORDERS),
+      bookings: getLocal('bookings', INITIAL_BOOKINGS),
+      customers: getLocal('customers', INITIAL_CUSTOMERS),
+      festivals: getLocal('festivals', INITIAL_FESTIVALS),
+      raw_materials: getLocal('raw_materials', INITIAL_RAW_MATERIALS),
+      suppliers: getLocal('suppliers', INITIAL_SUPPLIERS),
+      purchases: getLocal('purchases', INITIAL_PURCHASES),
+      staff: getLocal('staff', INITIAL_STAFF),
+      branches: getLocal('branches', INITIAL_BRANCHES),
+      settings: getLocal('settings', INITIAL_SETTINGS),
+      timestamp: new Date().toISOString(),
+    };
+    return JSON.stringify(data, null, 2);
+  },
+
+  restoreBackupJSON(jsonData: string): boolean {
+    try {
+      const parsed = JSON.parse(jsonData);
+      if (parsed.products) setLocal('products', parsed.products);
+      if (parsed.categories) setLocal('categories', parsed.categories);
+      if (parsed.orders) setLocal('orders', parsed.orders);
+      if (parsed.bookings) setLocal('bookings', parsed.bookings);
+      if (parsed.customers) setLocal('customers', parsed.customers);
+      if (parsed.festivals) setLocal('festivals', parsed.festivals);
+      if (parsed.raw_materials) setLocal('raw_materials', parsed.raw_materials);
+      if (parsed.suppliers) setLocal('suppliers', parsed.suppliers);
+      if (parsed.purchases) setLocal('purchases', parsed.purchases);
+      if (parsed.staff) setLocal('staff', parsed.staff);
+      if (parsed.branches) setLocal('branches', parsed.branches);
+      if (parsed.settings) setLocal('settings', parsed.settings);
+      return true;
+    } catch {
+      return false;
+    }
   },
 };

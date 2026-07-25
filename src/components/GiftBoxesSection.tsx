@@ -68,7 +68,7 @@ export const GiftBoxesSection: React.FC<GiftBoxesSectionProps> = ({
                     <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.2em] block">
                       Royal Delicacies Included:
                     </span>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-[#D9D9D9] font-medium">
+                    <div className="grid grid-cols-1 min-[375px]:grid-cols-2 gap-2 text-xs text-[#D9D9D9] font-medium">
                       {box.itemsIncluded.map((item, i) => (
                         <div key={i} className="flex items-center space-x-1.5">
                           <Check className="w-3.5 h-3.5 text-[#F4D03F] shrink-0" />

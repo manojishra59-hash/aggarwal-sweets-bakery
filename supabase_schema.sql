@@ -1,5 +1,5 @@
 -- ====================================================
--- AGGARWAL SWEETS - COMPLETE PRODUCTION SUPABASE DATABASE SCHEMA
+-- AGGARWAL SWEETS MANAGEMENT SYSTEM - PRODUCTION SUPABASE SCHEMA
 -- ====================================================
 
 -- 1. EXTENSIONS & SETUP
@@ -16,10 +16,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ====================================================
--- TABLE DEFINITIONS
+-- MODULE 1: STORE SETTINGS
 -- ====================================================
-
--- SETTINGS
 CREATE TABLE IF NOT EXISTS public.settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     business_name TEXT NOT NULL DEFAULT 'Aggarwal Sweets & Bakery',
@@ -37,32 +35,9 @@ CREATE TABLE IF NOT EXISTS public.settings (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ADMINS
-CREATE TABLE IF NOT EXISTS public.admins (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT UNIQUE NOT NULL,
-    store TEXT NOT NULL DEFAULT 'Flagship Rajouri Garden',
-    role TEXT NOT NULL DEFAULT 'Super Admin' CHECK (role IN ('Super Admin', 'Store Manager', 'Order Executive', 'Inventory Specialist')),
-    permissions JSONB DEFAULT '["all"]'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- PROFILES
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    full_name TEXT,
-    phone TEXT UNIQUE,
-    email TEXT UNIQUE,
-    address TEXT,
-    avatar_url TEXT,
-    role TEXT DEFAULT 'customer' CHECK (role IN ('customer', 'admin', 'staff')),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- CATEGORIES
+-- ====================================================
+-- MODULE 2: CATEGORIES & PRODUCTS
+-- ====================================================
 CREATE TABLE IF NOT EXISTS public.categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE,
@@ -74,7 +49,6 @@ CREATE TABLE IF NOT EXISTS public.categories (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- PRODUCTS
 CREATE TABLE IF NOT EXISTS public.products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     store TEXT NOT NULL DEFAULT 'Aggarwal Sweets Rajouri Garden',
@@ -99,19 +73,25 @@ CREATE TABLE IF NOT EXISTS public.products (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- INVENTORY
+-- ====================================================
+-- MODULE 3: INVENTORY MANAGEMENT
+-- ====================================================
 CREATE TABLE IF NOT EXISTS public.inventory (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_id UUID UNIQUE REFERENCES public.products(id) ON DELETE CASCADE,
     current_stock NUMERIC(10,2) NOT NULL DEFAULT 0.0 CHECK (current_stock >= 0),
     minimum_stock NUMERIC(10,2) NOT NULL DEFAULT 10.0 CHECK (minimum_stock >= 0),
+    reorder_quantity NUMERIC(10,2) NOT NULL DEFAULT 50.0 CHECK (reorder_quantity >= 0),
+    supplier_name TEXT DEFAULT 'Amul Dairy & Local Desi Ghee Vendors',
     status TEXT DEFAULT 'IN_STOCK' CHECK (status IN ('IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK')),
     last_restocked TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- CUSTOMERS
+-- ====================================================
+-- MODULE 4: CUSTOMERS & CRM
+-- ====================================================
 CREATE TABLE IF NOT EXISTS public.customers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -119,14 +99,45 @@ CREATE TABLE IF NOT EXISTS public.customers (
     phone TEXT UNIQUE NOT NULL,
     email TEXT,
     address TEXT,
+    city TEXT DEFAULT 'New Delhi',
     order_count INT DEFAULT 0 CHECK (order_count >= 0),
     total_spending NUMERIC(12,2) DEFAULT 0.0 CHECK (total_spending >= 0),
     loyalty_tier TEXT DEFAULT 'Silver' CHECK (loyalty_tier IN ('Silver', 'Gold', 'Platinum', 'VIP')),
+    loyalty_points INT DEFAULT 0 CHECK (loyalty_points >= 0),
+    tags TEXT[] DEFAULT ARRAY['Walk-in']::TEXT[],
+    notes TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- COUPONS
+CREATE TABLE IF NOT EXISTS public.crm_interactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID REFERENCES public.customers(id) ON DELETE CASCADE,
+    channel TEXT NOT NULL CHECK (channel IN ('Phone', 'WhatsApp', 'Email', 'In-Store', 'Website')),
+    interaction_type TEXT NOT NULL CHECK (interaction_type IN ('Inquiry', 'Feedback', 'Complaint', 'VIP Request', 'Custom Order')),
+    subject TEXT NOT NULL,
+    notes TEXT NOT NULL,
+    resolved BOOLEAN DEFAULT true,
+    staff_id UUID,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ====================================================
+-- MODULE 5: LOYALTY PROGRAM
+-- ====================================================
+CREATE TABLE IF NOT EXISTS public.loyalty_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID REFERENCES public.customers(id) ON DELETE CASCADE,
+    order_id UUID,
+    points_earned INT DEFAULT 0 CHECK (points_earned >= 0),
+    points_redeemed INT DEFAULT 0 CHECK (points_redeemed >= 0),
+    description TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ====================================================
+-- MODULE 6: ORDERS & ORDER ITEMS
+-- ====================================================
 CREATE TABLE IF NOT EXISTS public.coupons (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     code TEXT UNIQUE NOT NULL,
@@ -144,7 +155,6 @@ CREATE TABLE IF NOT EXISTS public.coupons (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ORDERS
 CREATE TABLE IF NOT EXISTS public.orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_number TEXT UNIQUE NOT NULL,
@@ -168,7 +178,6 @@ CREATE TABLE IF NOT EXISTS public.orders (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ORDER ITEMS
 CREATE TABLE IF NOT EXISTS public.order_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
@@ -180,7 +189,6 @@ CREATE TABLE IF NOT EXISTS public.order_items (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- COUPON USAGE
 CREATE TABLE IF NOT EXISTS public.coupon_usage (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     coupon_id UUID REFERENCES public.coupons(id) ON DELETE CASCADE,
@@ -189,7 +197,9 @@ CREATE TABLE IF NOT EXISTS public.coupon_usage (
     used_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- TABLE BOOKINGS
+-- ====================================================
+-- MODULE 7: TABLE BOOKING & DINE-IN
+-- ====================================================
 CREATE TABLE IF NOT EXISTS public.table_bookings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_name TEXT NOT NULL,
@@ -204,7 +214,85 @@ CREATE TABLE IF NOT EXISTS public.table_bookings (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- REVIEWS
+-- ====================================================
+-- MODULE 8: FESTIVALS & SPECIAL OFFERS
+-- ====================================================
+CREATE TABLE IF NOT EXISTS public.festivals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    tagline TEXT,
+    banner_url TEXT NOT NULL,
+    discount_percentage NUMERIC(5,2) DEFAULT 0.0 CHECK (discount_percentage >= 0 AND discount_percentage <= 100),
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    active BOOLEAN DEFAULT true,
+    featured_products UUID[] DEFAULT ARRAY[]::UUID[],
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ====================================================
+-- MODULE 9: STAFF MANAGEMENT & PAYROLL
+-- ====================================================
+CREATE TABLE IF NOT EXISTS public.staff (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    employee_id TEXT UNIQUE NOT NULL,
+    full_name TEXT NOT NULL,
+    phone TEXT UNIQUE NOT NULL,
+    email TEXT,
+    designation TEXT NOT NULL CHECK (designation IN ('Head Halwai', 'Assistant Chef', 'Billing Cashier', 'Store Manager', 'Delivery Boy', 'Cleaner')),
+    department TEXT NOT NULL DEFAULT 'Sweets Section',
+    monthly_salary NUMERIC(10,2) NOT NULL CHECK (monthly_salary >= 0),
+    hire_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'ON_LEAVE', 'TERMINATED')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.payroll (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    staff_id UUID REFERENCES public.staff(id) ON DELETE CASCADE,
+    month_year TEXT NOT NULL, -- e.g. "2026-10"
+    base_salary NUMERIC(10,2) NOT NULL CHECK (base_salary >= 0),
+    bonus NUMERIC(10,2) DEFAULT 0.0 CHECK (bonus >= 0),
+    deductions NUMERIC(10,2) DEFAULT 0.0 CHECK (deductions >= 0),
+    net_pay NUMERIC(10,2) NOT NULL CHECK (net_pay >= 0),
+    payment_status TEXT NOT NULL DEFAULT 'PENDING' CHECK (payment_status IN ('PENDING', 'PAID', 'PROCESSING')),
+    payment_date DATE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ====================================================
+-- MODULE 10: ADMINS & USER PROFILES
+-- ====================================================
+CREATE TABLE IF NOT EXISTS public.admins (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE NOT NULL,
+    store TEXT NOT NULL DEFAULT 'Flagship Rajouri Garden',
+    role TEXT NOT NULL DEFAULT 'Super Admin' CHECK (role IN ('Super Admin', 'Store Manager', 'Order Executive', 'Inventory Specialist')),
+    permissions JSONB DEFAULT '["all"]'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    full_name TEXT,
+    phone TEXT UNIQUE,
+    email TEXT UNIQUE,
+    address TEXT,
+    avatar_url TEXT,
+    role TEXT DEFAULT 'customer' CHECK (role IN ('customer', 'admin', 'staff')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ====================================================
+-- MODULE 11: REVIEWS, MESSAGES & NOTIFICATIONS
+-- ====================================================
 CREATE TABLE IF NOT EXISTS public.reviews (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_name TEXT NOT NULL,
@@ -218,7 +306,6 @@ CREATE TABLE IF NOT EXISTS public.reviews (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- CONTACT MESSAGES
 CREATE TABLE IF NOT EXISTS public.contact_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -231,44 +318,6 @@ CREATE TABLE IF NOT EXISTS public.contact_messages (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- OFFERS & POPUPS
-CREATE TABLE IF NOT EXISTS public.offers (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title TEXT NOT NULL,
-    subtitle TEXT,
-    banner_image TEXT NOT NULL,
-    discount_text TEXT NOT NULL,
-    popup_active BOOLEAN DEFAULT false,
-    valid_till DATE NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- GALLERY
-CREATE TABLE IF NOT EXISTS public.gallery (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title TEXT NOT NULL,
-    category TEXT DEFAULT 'All Sweets',
-    image_url TEXT NOT NULL,
-    sort_order INT DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- BLOGS / STORIES
-CREATE TABLE IF NOT EXISTS public.blogs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title TEXT NOT NULL,
-    slug TEXT UNIQUE NOT NULL,
-    excerpt TEXT NOT NULL,
-    content TEXT NOT NULL,
-    cover_image TEXT NOT NULL,
-    author TEXT DEFAULT 'Halwai Master Rameshwar',
-    publish_date DATE DEFAULT CURRENT_DATE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- NOTIFICATIONS
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
@@ -278,7 +327,6 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ACTIVITY LOGS
 CREATE TABLE IF NOT EXISTS public.activity_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID,
@@ -292,10 +340,7 @@ CREATE TABLE IF NOT EXISTS public.activity_logs (
 -- ====================================================
 -- TRIGGERS FOR UPDATED_AT
 -- ====================================================
-
 CREATE TRIGGER update_settings_updated_at BEFORE UPDATE ON public.settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_admins_updated_at BEFORE UPDATE ON public.admins FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_categories_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON public.products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_inventory_updated_at BEFORE UPDATE ON public.inventory FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -303,15 +348,15 @@ CREATE TRIGGER update_customers_updated_at BEFORE UPDATE ON public.customers FOR
 CREATE TRIGGER update_coupons_updated_at BEFORE UPDATE ON public.coupons FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON public.orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_table_bookings_updated_at BEFORE UPDATE ON public.table_bookings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON public.reviews FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_contact_messages_updated_at BEFORE UPDATE ON public.contact_messages FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_offers_updated_at BEFORE UPDATE ON public.offers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_blogs_updated_at BEFORE UPDATE ON public.blogs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_festivals_updated_at BEFORE UPDATE ON public.festivals FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_staff_updated_at BEFORE UPDATE ON public.staff FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_payroll_updated_at BEFORE UPDATE ON public.payroll FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_admins_updated_at BEFORE UPDATE ON public.admins FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ====================================================
 -- INDEXES FOR PERFORMANCE
 -- ====================================================
-
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_featured ON public.products(featured);
 CREATE INDEX IF NOT EXISTS idx_products_available ON public.products(available);
@@ -320,198 +365,95 @@ CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(order_status);
 CREATE INDEX IF NOT EXISTS idx_orders_created ON public.orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_customers_phone ON public.customers(phone);
 CREATE INDEX IF NOT EXISTS idx_coupons_code ON public.coupons(code);
+CREATE INDEX IF NOT EXISTS idx_staff_employee_id ON public.staff(employee_id);
+CREATE INDEX IF NOT EXISTS idx_payroll_staff_month ON public.payroll(staff_id, month_year);
 CREATE INDEX IF NOT EXISTS idx_notifications_unread ON public.notifications(is_read) WHERE is_read = false;
-
--- ====================================================
--- FUNCTIONS
--- ====================================================
-
--- 1. FUNCTION TO GENERATE SEQUENTIAL ORDER ID
-CREATE OR REPLACE FUNCTION generate_order_id()
-RETURNS TEXT AS $$
-DECLARE
-    next_val INT;
-    new_order_id TEXT;
-BEGIN
-    SELECT COALESCE(MAX(CAST(SUBSTRING(order_number FROM 4) AS INT)), 1000) + 1
-    INTO next_val
-    FROM public.orders
-    WHERE order_number LIKE 'AS-%';
-    
-    new_order_id := 'AS-' || next_val;
-    RETURN new_order_id;
-END;
-$$ LANGUAGE plpgsql;
-
--- 2. FUNCTION TO CREATE NOTIFICATION
-CREATE OR REPLACE FUNCTION create_notification(
-    p_title TEXT,
-    p_message TEXT,
-    p_type TEXT
-) RETURNS UUID AS $$
-DECLARE
-    v_id UUID;
-BEGIN
-    INSERT INTO public.notifications (title, message, type)
-    VALUES (p_title, p_message, p_type)
-    RETURNING id INTO v_id;
-    RETURN v_id;
-END;
-$$ LANGUAGE plpgsql;
-
--- 3. FUNCTION TO UPDATE INVENTORY STOCK
-CREATE OR REPLACE FUNCTION update_product_stock(
-    p_product_id UUID,
-    p_quantity_deducted NUMERIC
-) RETURNS VOID AS $$
-DECLARE
-    v_new_stock NUMERIC;
-    v_min_stock NUMERIC;
-    v_product_name TEXT;
-BEGIN
-    UPDATE public.products
-    SET stock = GREATEST(0, stock - p_quantity_deducted)
-    WHERE id = p_product_id
-    RETURNING stock, name INTO v_new_stock, v_product_name;
-
-    UPDATE public.inventory
-    SET current_stock = v_new_stock,
-        status = CASE 
-            WHEN v_new_stock <= 0 THEN 'OUT_OF_STOCK'
-            WHEN v_new_stock <= minimum_stock THEN 'LOW_STOCK'
-            ELSE 'IN_STOCK'
-        END,
-        updated_at = NOW()
-    WHERE product_id = p_product_id
-    RETURNING minimum_stock INTO v_min_stock;
-
-    -- Trigger Low Stock Alert
-    IF v_new_stock <= COALESCE(v_min_stock, 10.0) THEN
-        PERFORM create_notification(
-            'Low Stock Warning',
-            'Stock for ' || v_product_name || ' dropped to ' || v_new_stock || ' kg!',
-            'LOW_STOCK'
-        );
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-
--- ====================================================
--- AUTOMATIC BUSINESS TRIGGERS
--- ====================================================
-
--- 1. Trigger on New Order
-CREATE OR REPLACE FUNCTION on_order_created()
-RETURNS TRIGGER AS $$
-BEGIN
-    PERFORM create_notification(
-        'New Online Order ' || NEW.order_number,
-        'Order placed by ' || NEW.customer_name || ' for ₹' || NEW.grand_total,
-        'ORDER'
-    );
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_on_order_created
-AFTER INSERT ON public.orders
-FOR EACH ROW EXECUTE FUNCTION on_order_created();
-
--- 2. Trigger on New Booking
-CREATE OR REPLACE FUNCTION on_booking_created()
-RETURNS TRIGGER AS $$
-BEGIN
-    PERFORM create_notification(
-        'New Table Reservation',
-        NEW.customer_name || ' requested table for ' || NEW.guests || ' guests on ' || NEW.booking_date,
-        'BOOKING'
-    );
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_on_booking_created
-AFTER INSERT ON public.table_bookings
-FOR EACH ROW EXECUTE FUNCTION on_booking_created();
-
--- 3. Trigger on New Contact Message
-CREATE OR REPLACE FUNCTION on_contact_created()
-RETURNS TRIGGER AS $$
-BEGIN
-    PERFORM create_notification(
-        'New Customer Inquiry',
-        'Message from ' || NEW.name || ' (' || NEW.phone || ')',
-        'CONTACT'
-    );
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_on_contact_created
-AFTER INSERT ON public.contact_messages
-FOR EACH ROW EXECUTE FUNCTION on_contact_created();
 
 -- ====================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ====================================================
-
 ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.inventory ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.crm_interactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.loyalty_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coupon_usage ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.table_bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.festivals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.staff ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payroll ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.gallery ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.blogs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 
--- PUBLIC READ POLICIES
+-- Public Read Policies
 CREATE POLICY "Public Read Settings" ON public.settings FOR SELECT USING (true);
 CREATE POLICY "Public Read Categories" ON public.categories FOR SELECT USING (true);
 CREATE POLICY "Public Read Products" ON public.products FOR SELECT USING (true);
+CREATE POLICY "Public Read Festivals" ON public.festivals FOR SELECT USING (true);
 CREATE POLICY "Public Read Approved Reviews" ON public.reviews FOR SELECT USING (approved = true);
-CREATE POLICY "Public Read Active Offers" ON public.offers FOR SELECT USING (true);
-CREATE POLICY "Public Read Gallery" ON public.gallery FOR SELECT USING (true);
-CREATE POLICY "Public Read Blogs" ON public.blogs FOR SELECT USING (true);
 
--- PUBLIC INSERT POLICIES (For orders, bookings, contact forms, reviews)
+-- Public Insert Policies (Orders, Bookings, Contacts, Reviews, Customer signup)
 CREATE POLICY "Public Insert Orders" ON public.orders FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public Insert Order Items" ON public.order_items FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public Insert Table Bookings" ON public.table_bookings FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public Insert Bookings" ON public.table_bookings FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public Insert Contact Messages" ON public.contact_messages FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public Insert Reviews" ON public.reviews FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public Insert Customers" ON public.customers FOR INSERT WITH CHECK (true);
 
--- FULL ALL PERMISSIONS FOR ADMINS / SERVICE ROLE
+-- Admin Full Access Policies
 CREATE POLICY "Admin All Settings" ON public.settings FOR ALL USING (true);
 CREATE POLICY "Admin All Products" ON public.products FOR ALL USING (true);
 CREATE POLICY "Admin All Categories" ON public.categories FOR ALL USING (true);
-CREATE POLICY "Admin All Orders" ON public.orders FOR ALL USING (true);
-CREATE POLICY "Admin All Bookings" ON public.table_bookings FOR ALL USING (true);
-CREATE POLICY "Admin All Customers" ON public.customers FOR ALL USING (true);
-CREATE POLICY "Admin All Coupons" ON public.coupons FOR ALL USING (true);
 CREATE POLICY "Admin All Inventory" ON public.inventory FOR ALL USING (true);
+CREATE POLICY "Admin All Customers" ON public.customers FOR ALL USING (true);
+CREATE POLICY "Admin All CRM" ON public.crm_interactions FOR ALL USING (true);
+CREATE POLICY "Admin All Loyalty" ON public.loyalty_transactions FOR ALL USING (true);
+CREATE POLICY "Admin All Orders" ON public.orders FOR ALL USING (true);
+CREATE POLICY "Admin All Order Items" ON public.order_items FOR ALL USING (true);
+CREATE POLICY "Admin All Bookings" ON public.table_bookings FOR ALL USING (true);
+CREATE POLICY "Admin All Festivals" ON public.festivals FOR ALL USING (true);
+CREATE POLICY "Admin All Staff" ON public.staff FOR ALL USING (true);
+CREATE POLICY "Admin All Payroll" ON public.payroll FOR ALL USING (true);
 CREATE POLICY "Admin All Notifications" ON public.notifications FOR ALL USING (true);
-CREATE POLICY "Admin All Contacts" ON public.contact_messages FOR ALL USING (true);
 CREATE POLICY "Admin All Reviews" ON public.reviews FOR ALL USING (true);
-CREATE POLICY "Admin All Offers" ON public.offers FOR ALL USING (true);
-CREATE POLICY "Admin All Blogs" ON public.blogs FOR ALL USING (true);
-CREATE POLICY "Admin All Admins" ON public.admins FOR ALL USING (true);
 
 -- ====================================================
--- SEED INITIAL STORE SETTINGS & ADMIN DATA
+-- STORAGE BUCKETS SETUP (Product Images & Festival Banners)
 -- ====================================================
+INSERT INTO storage.buckets (id, name, public)
+VALUES 
+    ('product-images', 'product-images', true),
+    ('festival-banners', 'festival-banners', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
 
+-- Storage Public Access Policies
+CREATE POLICY "Public Access Product Images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'product-images');
+
+CREATE POLICY "Public Upload Product Images"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'product-images');
+
+CREATE POLICY "Public Access Festival Banners"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'festival-banners');
+
+CREATE POLICY "Public Upload Festival Banners"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'festival-banners');
+
+-- ====================================================
+-- INITIAL SEED DATA
+-- ====================================================
 INSERT INTO public.settings (business_name, tagline, phone, email, address, whatsapp, gst_number)
 VALUES (
     'Aggarwal Sweets & Bakery',
@@ -521,5 +463,17 @@ VALUES (
     'Plot 42, Main Market, Rajouri Garden, New Delhi, 110027',
     '919810012345',
     '07AAAAA0000A1Z5'
+)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO public.festivals (name, tagline, banner_url, discount_percentage, start_date, end_date, active)
+VALUES (
+    'Diwali Mahotsav 2026',
+    'Celebrate With Pure Desi Ghee Kaju Katli & Royal Gift Boxes',
+    'https://images.unsplash.com/photo-1599785209707-a456fc1337cc?auto=format&fit=crop&q=80&w=1200',
+    20.0,
+    '2026-10-15',
+    '2026-11-05',
+    true
 )
 ON CONFLICT DO NOTHING;
