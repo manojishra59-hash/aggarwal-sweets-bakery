@@ -3,7 +3,7 @@ import { SweetItem, ReviewItem, CartItem } from '../types';
 import { FEATURED_SWEETS, GOOGLE_REVIEWS, BRAND_NAME, BRAND_PHONE, BRAND_WHATSAPP, BRAND_ADDRESS, BRAND_HOURS } from '../data/sweetsData';
 export { BRAND_WHATSAPP, BRAND_NAME, BRAND_PHONE };
 
-export interface AdminProduct extends SweetItem {
+export interface StaffProduct extends SweetItem {
   stockKg: number;
   isEnabled: boolean;
   isFeatured?: boolean;
@@ -11,14 +11,16 @@ export interface AdminProduct extends SweetItem {
   isFestivalSpecial?: boolean;
   images?: string[];
 }
+export type AdminProduct = StaffProduct;
 
-export interface AdminCategory {
+export interface StaffCategory {
   id: string;
   name: string;
   description: string;
   isVisible: boolean;
   displayOrder: number;
 }
+export type AdminCategory = StaffCategory;
 
 export interface OrderRecord {
   id: string;

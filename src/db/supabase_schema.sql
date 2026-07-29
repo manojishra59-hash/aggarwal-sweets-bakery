@@ -492,21 +492,21 @@ CREATE POLICY "Public Insert Contact Messages" ON public.contact_messages FOR IN
 CREATE POLICY "Public Insert Reviews" ON public.reviews FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public Insert Customers" ON public.customers FOR INSERT WITH CHECK (true);
 
--- FULL ALL PERMISSIONS FOR ADMINS / SERVICE ROLE
-CREATE POLICY "Admin All Settings" ON public.settings FOR ALL USING (true);
-CREATE POLICY "Admin All Products" ON public.products FOR ALL USING (true);
-CREATE POLICY "Admin All Categories" ON public.categories FOR ALL USING (true);
-CREATE POLICY "Admin All Orders" ON public.orders FOR ALL USING (true);
-CREATE POLICY "Admin All Bookings" ON public.table_bookings FOR ALL USING (true);
-CREATE POLICY "Admin All Customers" ON public.customers FOR ALL USING (true);
-CREATE POLICY "Admin All Coupons" ON public.coupons FOR ALL USING (true);
-CREATE POLICY "Admin All Inventory" ON public.inventory FOR ALL USING (true);
-CREATE POLICY "Admin All Notifications" ON public.notifications FOR ALL USING (true);
-CREATE POLICY "Admin All Contacts" ON public.contact_messages FOR ALL USING (true);
-CREATE POLICY "Admin All Reviews" ON public.reviews FOR ALL USING (true);
-CREATE POLICY "Admin All Offers" ON public.offers FOR ALL USING (true);
-CREATE POLICY "Admin All Blogs" ON public.blogs FOR ALL USING (true);
-CREATE POLICY "Admin All Admins" ON public.admins FOR ALL USING (true);
+-- FULL ALL PERMISSIONS FOR STAFF / SERVICE ROLE
+CREATE POLICY "Staff All Settings" ON public.settings FOR ALL USING (true);
+CREATE POLICY "Staff All Products" ON public.products FOR ALL USING (true);
+CREATE POLICY "Staff All Categories" ON public.categories FOR ALL USING (true);
+CREATE POLICY "Staff All Orders" ON public.orders FOR ALL USING (true);
+CREATE POLICY "Staff All Bookings" ON public.table_bookings FOR ALL USING (true);
+CREATE POLICY "Staff All Customers" ON public.customers FOR ALL USING (true);
+CREATE POLICY "Staff All Coupons" ON public.coupons FOR ALL USING (true);
+CREATE POLICY "Staff All Inventory" ON public.inventory FOR ALL USING (true);
+CREATE POLICY "Staff All Notifications" ON public.notifications FOR ALL USING (true);
+CREATE POLICY "Staff All Contacts" ON public.contact_messages FOR ALL USING (true);
+CREATE POLICY "Staff All Reviews" ON public.reviews FOR ALL USING (true);
+CREATE POLICY "Staff All Offers" ON public.offers FOR ALL USING (true);
+CREATE POLICY "Staff All Blogs" ON public.blogs FOR ALL USING (true);
+CREATE POLICY "Staff All Admins" ON public.admins FOR ALL USING (true);
 
 -- ====================================================
 -- SEED INITIAL STORE SETTINGS & ADMIN DATA

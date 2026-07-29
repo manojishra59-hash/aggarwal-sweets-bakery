@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   MapPin,
   Phone,
@@ -8,7 +8,6 @@ import {
   Twitter,
   Heart,
   Award,
-  Lock,
 } from 'lucide-react';
 import {
   BRAND_TAGLINE,
@@ -18,10 +17,32 @@ import {
 } from '../data/sweetsData';
 
 interface FooterProps {
-  onOpenAdmin?: () => void;
+  onOpenStaff?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenStaff }) => {
+  const clickCountRef = useRef(0);
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleAggarwalSecretClick = () => {
+    clickCountRef.current += 1;
+
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+    }
+
+    if (clickCountRef.current >= 5) {
+      clickCountRef.current = 0;
+      if (onOpenStaff) {
+        onOpenStaff();
+      }
+    } else {
+      clickTimerRef.current = setTimeout(() => {
+        clickCountRef.current = 0;
+      }, 3000);
+    }
+  };
+
   return (
     <footer className="bg-[#0A0A0A] text-white pt-16 pb-28 md:pb-12 border-t border-[#D4AF37]/20 relative overflow-hidden">
       {/* Background Video Layer - Footer Section (120 FPS Optimized) */}
@@ -47,7 +68,18 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
                 A
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-extrabold text-white font-serif-luxury tracking-wide leading-none">
+                <span
+                  onClick={handleAggarwalSecretClick}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleAggarwalSecretClick();
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Aggarwal"
+                  className="text-xl font-extrabold text-white font-serif-luxury tracking-wide leading-none select-none focus:outline-none cursor-default"
+                >
                   Aggarwal
                 </span>
                 <span className="text-[10px] font-bold text-[#F4D03F] uppercase tracking-[0.2em] mt-1">
@@ -195,22 +227,11 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
             <Heart className="w-3.5 h-3.5 fill-[#F4D03F] text-[#F4D03F]" />
             <span>for royal sweet celebrations across India</span>
           </p>
-
-          {/* Minimal Elegant Admin Login Link */}
-          {onOpenAdmin && (
-            <button
-              onClick={onOpenAdmin}
-              className="inline-flex items-center space-x-1.5 text-[11px] text-gray-500 hover:text-[#D4AF37] transition-colors cursor-pointer opacity-70 hover:opacity-100"
-              title="Admin Portal Access"
-            >
-              <Lock className="w-3 h-3 text-[#D4AF37]" />
-              <span>Admin Login</span>
-            </button>
-          )}
         </div>
 
       </div>
     </footer>
   );
 };
+
 

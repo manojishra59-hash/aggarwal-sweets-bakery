@@ -18,7 +18,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
   if (!isOpen) return null;
 
-  const results = FEATURED_SWEETS.filter(
+  const getProductsList = (): SweetItem[] => {
+    const saved = localStorage.getItem('aggarwal_admin_products');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return FEATURED_SWEETS;
+  };
+
+  const productList = getProductsList();
+
+  const results = productList.filter(
     (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||

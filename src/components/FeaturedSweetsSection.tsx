@@ -1,17 +1,15 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Star, Plus } from 'lucide-react';
+import { Sparkles, Star } from 'lucide-react';
 import { SweetItem } from '../types';
 
 interface FeaturedSweetsSectionProps {
   sweets: SweetItem[];
-  onAddToCart: (sweet: SweetItem, qtyKg: number) => void;
   onSelectSweet: (sweet: SweetItem) => void;
 }
 
 export const FeaturedSweetsSection: React.FC<FeaturedSweetsSectionProps> = ({
   sweets,
-  onAddToCart,
   onSelectSweet,
 }) => {
   return (
@@ -90,7 +88,7 @@ export const FeaturedSweetsSection: React.FC<FeaturedSweetsSectionProps> = ({
                   </p>
                 </div>
 
-                {/* Price & Add Action */}
+                {/* Price */}
                 <div className="mt-5 pt-3.5 border-t border-[#D4AF37]/15 flex items-center justify-between">
                   <div>
                     <span className="text-[10px] text-[#A3A3A3] font-medium block uppercase tracking-wider">
@@ -100,19 +98,6 @@ export const FeaturedSweetsSection: React.FC<FeaturedSweetsSectionProps> = ({
                       ₹{sweet.pricePerKg}
                     </span>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddToCart(sweet, 1);
-                    }}
-                    className="px-3.5 py-2 rounded-xl btn-gold text-xs font-bold shadow-md flex items-center space-x-1.5 cursor-pointer active:scale-95"
-                    title="Add 1kg to order"
-                  >
-                    <Plus className="w-4 h-4 text-[#0A0A0A]" />
-                    <span>Add Box</span>
-                  </button>
                 </div>
               </div>
             </motion.div>

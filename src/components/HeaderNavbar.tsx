@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Phone, Menu, X, Award, Users, ChevronRight, Sparkles } from 'lucide-react';
+import { ShoppingBag, Search, Phone, Menu, X, Award, Users, ChevronRight, Sparkles, Lock } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { BRAND_NAME, BRAND_PHONE, BRAND_WHATSAPP } from '../data/sweetsData';
 
@@ -7,12 +7,14 @@ interface HeaderNavbarProps {
   cartCount: number;
   onOpenCart: () => void;
   onOpenSearch: () => void;
+  onOpenStaff: () => void;
 }
 
 export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
   cartCount,
   onOpenCart,
   onOpenSearch,
+  onOpenStaff,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

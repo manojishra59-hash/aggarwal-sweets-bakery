@@ -19,39 +19,115 @@ import { FloatingActions } from './components/FloatingActions';
 import { CartDrawer } from './components/CartDrawer';
 import { SearchModal } from './components/SearchModal';
 import { SweetDetailModal } from './components/SweetDetailModal';
-import { AdminAuthModal } from './components/Admin/AdminAuthModal';
-import { AdminModal } from './components/Admin/AdminModal';
 import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { TableBookingModal } from './components/TableBookingModal';
+import { StaffAuthModal } from './components/Staff/StaffAuthModal';
+import { StaffModal } from './components/Staff/StaffModal';
 
 import { FEATURED_SWEETS, BRAND_WHATSAPP } from './data/sweetsData';
 import { SweetItem, CartItem, FestivalItem, GiftBoxItem } from './types';
 
 export function App() {
+  const [sweets, setSweets] = useState<SweetItem[]>(() => {
+    const saved = localStorage.getItem('aggarwal_admin_products');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return FEATURED_SWEETS;
+  });
+
+  React.useEffect(() => {
+    const handleProductsUpdate = () => {
+      const saved = localStorage.getItem('aggarwal_admin_products');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setSweets(parsed);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    window.addEventListener('aggarwal_products_updated', handleProductsUpdate);
+    window.addEventListener('storage', handleProductsUpdate);
+    return () => {
+      window.removeEventListener('aggarwal_products_updated', handleProductsUpdate);
+      window.removeEventListener('storage', handleProductsUpdate);
+    };
+  }, []);
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedSweet, setSelectedSweet] = useState<SweetItem | null>(null);
 
-  // Admin & Features Modals
-  const [isAdminAuthOpen, setIsAdminAuthOpen] = useState(false);
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  // Features Modals
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [isTableBookingOpen, setIsTableBookingOpen] = useState(false);
 
-  const handleOpenAdminPortal = () => {
-    const isAuthed = localStorage.getItem('aggarwal_admin_auth') === 'true';
+  // Staff Modals
+  const [isStaffAuthOpen, setIsStaffAuthOpen] = useState(false);
+  const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
+
+  const handleOpenStaffPortal = () => {
+    const isAuthed =
+      localStorage.getItem('aggarwal_staff_auth') === 'true' ||
+      localStorage.getItem('aggarwal_admin_auth') === 'true';
     if (isAuthed) {
-      setIsAdminModalOpen(true);
+      setIsStaffModalOpen(true);
+      setIsStaffAuthOpen(false);
     } else {
-      setIsAdminAuthOpen(true);
+      setIsStaffAuthOpen(true);
+      setIsStaffModalOpen(false);
     }
   };
 
-  const handleAdminLogout = () => {
+  // Support #staff, #staff-login, /staff/login hash & pathname navigation
+  React.useEffect(() => {
+    const checkHashAndPath = () => {
+      const hash = window.location.hash;
+      const path = window.location.pathname;
+      if (
+        hash === '#staff' ||
+        hash === '#staff-login' ||
+        hash === '#admin' ||
+        hash === '#admin-login' ||
+        path.includes('/staff') ||
+        path.includes('/admin')
+      ) {
+        handleOpenStaffPortal();
+      }
+    };
+    checkHashAndPath();
+    window.addEventListener('hashchange', checkHashAndPath);
+    window.addEventListener('popstate', checkHashAndPath);
+    return () => {
+      window.removeEventListener('hashchange', checkHashAndPath);
+      window.removeEventListener('popstate', checkHashAndPath);
+    };
+  }, []);
+
+  const handleStaffLogout = () => {
+    localStorage.removeItem('aggarwal_staff_auth');
     localStorage.removeItem('aggarwal_admin_auth');
-    setIsAdminModalOpen(false);
-    setIsAdminAuthOpen(false);
+    setIsStaffModalOpen(false);
+    setIsStaffAuthOpen(false);
+    if (
+      window.location.hash === '#staff' ||
+      window.location.hash === '#staff-login' ||
+      window.location.hash === '#admin' ||
+      window.location.hash === '#admin-login'
+    ) {
+      window.history.pushState('', document.title, window.location.pathname + window.location.search);
+    }
   };
 
   // Cart operations
@@ -108,6 +184,7 @@ export function App() {
           cartCount={totalCartCount}
           onOpenCart={() => setIsCartOpen(true)}
           onOpenSearch={() => setIsSearchOpen(true)}
+          onOpenStaff={handleOpenStaffPortal}
         />
       </div>
 
@@ -118,8 +195,7 @@ export function App() {
 
         {/* Section 1: Featured Sweets */}
         <FeaturedSweetsSection
-          sweets={FEATURED_SWEETS}
-          onAddToCart={handleAddToCart}
+          sweets={sweets}
           onSelectSweet={(sweet) => setSelectedSweet(sweet)}
         />
 
@@ -162,8 +238,8 @@ export function App() {
         <InstagramSection />
       </main>
 
-      {/* Section 13: Footer with Admin Login Button */}
-      <Footer onOpenAdmin={handleOpenAdminPortal} />
+      {/* Section 13: Footer */}
+      <Footer onOpenStaff={handleOpenStaffPortal} />
 
       {/* Floating Action Buttons (WhatsApp, Call, Back To Top) */}
       <FloatingActions />
@@ -201,21 +277,21 @@ export function App() {
         onClose={() => setIsTableBookingOpen(false)}
       />
 
-      {/* Admin Auth Modal */}
-      <AdminAuthModal
-        isOpen={isAdminAuthOpen}
-        onClose={() => setIsAdminAuthOpen(false)}
+      {/* Staff Auth Modal */}
+      <StaffAuthModal
+        isOpen={isStaffAuthOpen}
+        onClose={() => setIsStaffAuthOpen(false)}
         onAuthenticated={() => {
-          setIsAdminAuthOpen(false);
-          setIsAdminModalOpen(true);
+          setIsStaffAuthOpen(false);
+          setIsStaffModalOpen(true);
         }}
       />
 
-      {/* Secure Admin Control Panel Modal */}
-      <AdminModal
-        isOpen={isAdminModalOpen}
-        onClose={() => setIsAdminModalOpen(false)}
-        onLogout={handleAdminLogout}
+      {/* Secure Staff Control Panel Modal */}
+      <StaffModal
+        isOpen={isStaffModalOpen}
+        onClose={() => setIsStaffModalOpen(false)}
+        onLogout={handleStaffLogout}
       />
     </div>
   );

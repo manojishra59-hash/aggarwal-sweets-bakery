@@ -32,7 +32,7 @@ import { AnalyticsTab } from './tabs/AnalyticsTab';
 import { DatabaseSchemaTab } from './tabs/DatabaseSchemaTab';
 
 import { AdminOrder, OrderStatus, InventoryItem, ActivityLog } from './types';
-import { INITIAL_ORDERS, INITIAL_INVENTORY, INITIAL_LOGS } from './mockAdminData';
+import { INITIAL_ORDERS, INITIAL_INVENTORY, INITIAL_LOGS } from './mockStaffData';
 import { BRAND_NAME } from '../../data/sweetsData';
 
 interface TabErrorBoundaryProps {
@@ -87,19 +87,19 @@ class TabErrorBoundary extends Component<TabErrorBoundaryProps, TabErrorBoundary
   }
 }
 
-interface AdminModalProps {
+interface StaffModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLogout: () => void;
 }
 
-export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogout }) => {
+export const StaffModal: React.FC<StaffModalProps> = ({ isOpen, onClose, onLogout }) => {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Shared Persistent State for Orders, Inventory & Logs
   const [orders, setOrders] = useState<AdminOrder[]>(() => {
-    const saved = localStorage.getItem('aggarwal_admin_orders');
+    const saved = localStorage.getItem('aggarwal_staff_orders') || localStorage.getItem('aggarwal_admin_orders');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -110,7 +110,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
   });
 
   const [inventory, setInventory] = useState<InventoryItem[]>(() => {
-    const saved = localStorage.getItem('aggarwal_admin_inventory');
+    const saved = localStorage.getItem('aggarwal_staff_inventory') || localStorage.getItem('aggarwal_admin_inventory');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -121,7 +121,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
   });
 
   const [logs, setLogs] = useState<ActivityLog[]>(() => {
-    const saved = localStorage.getItem('aggarwal_admin_logs');
+    const saved = localStorage.getItem('aggarwal_staff_logs') || localStorage.getItem('aggarwal_admin_logs');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -137,12 +137,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
     const safeOrders = Array.isArray(orders) ? orders : INITIAL_ORDERS;
     const updated = safeOrders.map((o) => (o.id === orderId ? { ...o, orderStatus: newStatus } : o));
     setOrders(updated);
-    localStorage.setItem('aggarwal_admin_orders', JSON.stringify(updated));
+    localStorage.setItem('aggarwal_staff_orders', JSON.stringify(updated));
 
     // Append log entry
     const newLog: ActivityLog = {
       id: `LOG-${Date.now()}`,
-      user: 'Executive Admin',
+      user: 'Executive Staff',
       action: `Updated status of Order #${orderId} to "${newStatus}"`,
       timestamp: 'Just now',
       type: 'order',
@@ -150,7 +150,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
     const safeLogs = Array.isArray(logs) ? logs : INITIAL_LOGS;
     const updatedLogs = [newLog, ...safeLogs];
     setLogs(updatedLogs);
-    localStorage.setItem('aggarwal_admin_logs', JSON.stringify(updatedLogs));
+    localStorage.setItem('aggarwal_staff_logs', JSON.stringify(updatedLogs));
   };
 
   const handleRestockInventory = (id: string, amount: number) => {
@@ -159,7 +159,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
       it.id === id ? { ...it, stockQuantity: it.stockQuantity + amount } : it
     );
     setInventory(updated);
-    localStorage.setItem('aggarwal_admin_inventory', JSON.stringify(updated));
+    localStorage.setItem('aggarwal_staff_inventory', JSON.stringify(updated));
   };
 
   const safeOrdersList = Array.isArray(orders) ? orders : INITIAL_ORDERS;
@@ -199,7 +199,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
               <h1 className="text-base font-black font-serif tracking-wider text-white flex items-center space-x-1.5">
                 <span>{BRAND_NAME}</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-black border border-[#D4AF37] text-[#F4D03F] font-mono">
-                  ADMIN
+                  STAFF
                 </span>
               </h1>
               <p className="text-[10px] text-[#F4D03F]">Executive Control Portal</p>
@@ -217,7 +217,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
           <button
             onClick={onLogout}
             className="px-3 py-1.5 rounded-xl bg-[#221B1B] hover:bg-red-900/80 text-gray-200 hover:text-white border border-red-500/40 text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
-            title="Logout Admin Session"
+            title="Logout Staff Session"
           >
             <LogOut className="w-3.5 h-3.5 text-red-400" />
             <span className="hidden sm:inline">Logout</span>
@@ -226,7 +226,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
           <button
             onClick={onClose}
             className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F4D03F] to-[#D4AF37] text-black font-black text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:brightness-110 transition-all flex items-center space-x-1 cursor-pointer active:scale-95"
-            title="Exit Admin Portal and Back to Store"
+            title="Exit Staff Portal and Back to Store"
           >
             <X className="w-4 h-4 text-black" />
             <span className="hidden sm:inline">Exit Portal</span>
@@ -287,7 +287,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
           <div className="p-3 rounded-xl bg-[#1A1A1A] border border-[#D4AF37]/20 text-[11px] text-gray-400 space-y-1 mt-auto">
             <div className="text-white font-bold flex items-center space-x-1">
               <Lock className="w-3 h-3 text-[#D4AF37]" />
-              <span>Role: Owner / Super Admin</span>
+              <span>Role: Executive Staff / Manager</span>
             </div>
             <div>Full permissions enabled</div>
           </div>
@@ -370,4 +370,5 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onLogou
     </div>
   );
 };
+
 

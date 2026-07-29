@@ -1,10 +1,10 @@
 import React from 'react';
 import { Printer, Download, X, Check, Award } from 'lucide-react';
-import { AdminOrder } from './types';
+import { StaffOrder } from './types';
 import { BRAND_NAME, BRAND_PHONE } from '../../data/sweetsData';
 
 interface InvoiceModalProps {
-  order: AdminOrder | null;
+  order: StaffOrder | null;
   isOpen: boolean;
   onClose: () => void;
 }

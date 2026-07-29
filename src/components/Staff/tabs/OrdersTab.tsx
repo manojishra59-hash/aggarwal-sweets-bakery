@@ -12,18 +12,18 @@ import {
   MapPin,
   ChevronDown,
 } from 'lucide-react';
-import { AdminOrder, OrderStatus } from '../types';
+import { StaffOrder, OrderStatus } from '../types';
 import { InvoiceModal } from '../InvoiceModal';
 
 interface OrdersTabProps {
-  orders: AdminOrder[];
+  orders: StaffOrder[];
   onUpdateStatus: (orderId: string, newStatus: OrderStatus) => void;
 }
 
 export const OrdersTab: React.FC<OrdersTabProps> = ({ orders, onUpdateStatus }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<AdminOrder | null>(null);
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<StaffOrder | null>(null);
 
   const statuses: (OrderStatus | 'All')[] = ['All', 'New', 'Preparing', 'Ready', 'Delivered', 'Cancelled'];
 
